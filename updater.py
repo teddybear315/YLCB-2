@@ -46,7 +46,7 @@ updated_hash = download(dl)
 l.log(f"New ZIP hash: {updated_hash}")
 if updated_hash == curr_hash:
     l.log("Hashes equal, exiting...")
-    return
+    os.exit()
 
 source = os.path.join(cwd, f"YLCB-2-{branch}\\")
 files = os.listdir(source)
