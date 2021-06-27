@@ -2,8 +2,9 @@ import requests
 import sys, os
 import zipfile
 import shutil
-import loglib
 import hashlib
+
+from loglib import Logger
 
 branch = sys.argv[1]
 cwd = os.path.abspath(".")
@@ -39,14 +40,16 @@ def download(url: str, dest_folder: str = ".") -> str:
 print("This function will overwrite all current files, except for secrets.json and config.json")
 if input("Type any character to exit, press enter to continue"): exit(0)
 dl = f"https://github.com/teddybear315/YLCB-2/archive/refs/heads/{branch}.zip"
-if os.path.exists(cw+f"{branch}.zip"):
-    curr_hash = hashlib.sha256(open(os.path.abspath(cw+f"{branch}.zip"),"rb").read()).hexdigest()
+curr_hash = ""
+print(cwd+f"\\{branch}.zip")
+if os.path.exists(cwd+f"\\{branch}.zip"):
+    curr_hash = hashlib.sha256(open(os.path.abspath(cwd+f"\\{branch}.zip"),"rb").read()).hexdigest()
     l.log(f"Current ZIP hash: {curr_hash}",)
 updated_hash = download(dl)
 l.log(f"New ZIP hash: {updated_hash}")
 if updated_hash == curr_hash:
     l.log("Hashes equal, exiting...")
-    return
+    os.exit()
 
 source = os.path.join(cwd, f"YLCB-2-{branch}\\")
 files = os.listdir(source)
