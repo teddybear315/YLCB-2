@@ -1,1 +1,2 @@
-python src/updater.py master skip-check
+python src/updater.py master
+move src/_updater.py src/updater.py
