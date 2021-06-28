@@ -80,4 +80,24 @@ for f in files:
             l.log(f"\tMoving {f}")
         except Exception: continue
     except Exception: continue
+
+# move src folder
+source = os.path.join(cwd, f"YLCB-2-{branch}\\src\\")
+dest1 = os.path.join(cwd, "src\\")
+files = os.listdir(source)
+
+l.log(f"Moving {source} to {dest1}...")
+for f in files:
+    try:
+        shutil.move(os.path.join(source,f), dest1)
+        l.log(f"\tMoving {f}")
+    except shutil.Error as e:
+        try:
+            os.remove(os.path.join(dest1,f))
+            shutil.move(os.path.join(source,f), dest1)
+            l.log(f"\tMoving {f}")
+        except Exception: continue
+    except Exception: continue
+
+shutil.rmtree(source)
 shutil.rmtree(master)
