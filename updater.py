@@ -7,7 +7,7 @@ import hashlib
 from loglib import Logger
 
 branch = sys.argv[1]
-cwd = os.path.abspath(".")
+cwd = os.path.abspath(".") + "\\"
 l = Logger(flags=0b0111)
 
 def download(url: str, dest_folder: str = ".") -> str:
@@ -58,7 +58,6 @@ with zipfile.ZipFile(f"./{branch}.zip", 'r') as zip_ref:
     zip_ref.extractall(cwd)
     zip_ref.close()
 
-#move main dir
 master = os.path.join(cwd, f"YLCB-2-{branch}\\")
 files = os.listdir(master)
 
@@ -68,7 +67,7 @@ for f in files:
         os.remove(os.path.join(master,f))
         continue
     if f == "updater.py":
-        shutil.move(os.path.join(master,f), dest1+"_"+f)
+        shutil.move(os.path.join(master,f), cwd+"_"+f)
         l.log(f"\tMoving {f}")
         continue
     try:
@@ -81,24 +80,4 @@ for f in files:
             l.log(f"\tMoving {f}")
         except Exception: continue
     except Exception: continue
-
-# move src folder
-source = os.path.join(cwd, f"YLCB-2-{branch}\\src\\")
-dest1 = os.path.join(cwd, "src\\")
-files = os.listdir(source)
-
-l.log(f"Moving {source} to {dest1}...")
-for f in files:
-    try:
-        shutil.move(os.path.join(source,f), dest1)
-        l.log(f"\tMoving {f}")
-    except shutil.Error as e:
-        try:
-            os.remove(os.path.join(dest1,f))
-            shutil.move(os.path.join(source,f), dest1)
-            l.log(f"\tMoving {f}")
-        except Exception: continue
-    except Exception: continue
-
-shutil.rmtree(source)
 shutil.rmtree(master)
