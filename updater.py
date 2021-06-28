@@ -58,46 +58,28 @@ with zipfile.ZipFile(f"./{branch}.zip", 'r') as zip_ref:
     zip_ref.extractall(cwd)
     zip_ref.close()
 
-master = os.path.join(cwd, f"YLCB-2-{branch}\\")
-files = os.listdir(master)
+def move_folder(dir, to):
+    files = os.listdir(dir)
 
-l.log(f"Moving {master} to {cwd}...")
-for f in files:
-    if f in ["config.json", "secrets.json", master.split('\\')[-1]]:
-        os.remove(os.path.join(master,f))
-        continue
-    if f == "updater.py":
-        shutil.move(os.path.join(master,f), cwd+"_"+f)
-        l.log(f"\tMoving {f}")
-        continue
-    try:
-        shutil.move(os.path.join(master,f), cwd)
-        l.log(f"\tMoving {f}")
-    except shutil.Error as e:
-        try:
-            os.remove(os.path.join(cwd,f))
-            shutil.move(os.path.join(master,f), cwd)
+    l.log(f"Moving {dir} to {to}...")
+    for f in files:
+        if f in ["config.json", "secrets.json", dir.split('\\')[-1]]:
+            os.remove(os.path.join(dir,f))
+            continue
+        if f == "updater.py":
+            shutil.move(os.path.join(dir,f), to+"_"+f)
             l.log(f"\tMoving {f}")
-        except Exception: continue
-    except Exception: continue
-
-# move src folder
-source = os.path.join(cwd, f"YLCB-2-{branch}\\src\\")
-dest1 = os.path.join(cwd, "src\\")
-files = os.listdir(source)
-
-l.log(f"Moving {source} to {dest1}...")
-for f in files:
-    try:
-        shutil.move(os.path.join(source,f), dest1)
-        l.log(f"\tMoving {f}")
-    except shutil.Error as e:
+            continue
         try:
-            os.remove(os.path.join(dest1,f))
-            shutil.move(os.path.join(source,f), dest1)
+            shutil.move(os.path.join(dir,f), to)
             l.log(f"\tMoving {f}")
+        except shutil.Error as e:
+            try:
+                os.remove(os.path.join(to,f))
+                shutil.move(os.path.join(dir,f), to)
+                l.log(f"\tMoving {f}")
+            except Exception: move_folder(dir+f+"\\", to+f+"\\")
         except Exception: continue
-    except Exception: continue
 
-shutil.rmtree(source)
-shutil.rmtree(master)
+move_folder(os.path.join(cwd, f"YLCB-2-{branch}\\"), cwd)
+shutil.rmtree(os.path.join(cwd, f"YLCB-2-{branch}\\"))
