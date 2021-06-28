@@ -32,38 +32,72 @@ def download(url: str, dest_folder: str = ".") -> str:
                     os.fsync(f.fileno())
                     bytes_downloaded=bytes_downloaded+(1024 * 8)
                 print(f"Downloaded: {bytes_downloaded/1024.0}kb/{total_kb}kb", end="\r")
-            print(f"Downloaded: {total_kb}kb/{total_kb}kb", end="\n")
+            print(f"Downloaded: {total_kb}kb/{total_kb}kb         ", end="\n")
         return hashlib.sha256(open(os.path.abspath(file_path),"rb").read()).hexdigest()
     else:  # HTTP status code 4XX/5XX
         l.err(f"Download failed: status code {r.status_code}\n{r.text}")
 
 print("This function will overwrite all current files, except for secrets.json and config.json")
 if input("Type any character to exit, press enter to continue"): exit(0)
-dl = f"https://github.com/teddybear315/YLCB-2/archive/refs/heads/{branch}.zip"
-curr_hash = ""
-print(cwd+f"\\{branch}.zip")
-if os.path.exists(cwd+f"\\{branch}.zip"):
-    curr_hash = hashlib.sha256(open(os.path.abspath(cwd+f"\\{branch}.zip"),"rb").read()).hexdigest()
-    l.log(f"Current ZIP hash: {curr_hash}",)
-updated_hash = download(dl)
-l.log(f"New ZIP hash: {updated_hash}")
-if updated_hash == curr_hash:
-    l.log("Hashes equal, exiting...")
-    os.exit()
 
-source = os.path.join(cwd, f"YLCB-2-{branch}\\")
-files = os.listdir(source)
+dl = f"https://github.com/teddybear315/YLCB-2/archive/refs/heads/{branch}.zip"
+
+if os.path.exists(cwd+f"\\{branch}.zip"):
+    updated_hash = download(dl)
+    if "skip-check" not in sys.argv:
+        curr_hash = hashlib.sha256(open(os.path.abspath(cwd+f"\\{branch}.zip"),"rb").read()).hexdigest()
+        if updated_hash == curr_hash:
+            l.log(f"Current ZIP hash: {curr_hash}")
+            l.log(f"New ZIP hash: {updated_hash}")
+            l.log("Hashes equal, exiting...")
+            exit(0)
+else: download(dl)
 
 with zipfile.ZipFile(f"./{branch}.zip", 'r') as zip_ref:
     l.log("Extracting zip to temp folder")
     zip_ref.extractall(cwd)
-    l.log(f"Moving {source} to {cwd}...")
-    for f in files:
-        if f in ["config.json", "secrets.json", source.split('\\')[-1], "updater.py"]: continue
+    zip_ref.close()
+
+#move main dir
+master = os.path.join(cwd, f"YLCB-2-{branch}\\")
+files = os.listdir(master)
+
+l.log(f"Moving {master} to {cwd}...")
+for f in files:
+    if f in ["config.json", "secrets.json", master.split('\\')[-1]]:
+        os.remove(os.path.join(master,f))
+        continue
+    if f == "updater.py":
+        shutil.move(os.path.join(master,f), cwd+"\\_"+f)
+        continue
+    try:
+        shutil.move(os.path.join(master,f), cwd)
         l.log(f"\tMoving {f}")
+    except shutil.Error as e:
         try:
-            shutil.move(source+f, cwd)
-        except Exception as e:
-            os.remove(dest1+f)
-            shutil.move(source+f, cwd)
-    os.rmdir(source)
+            os.remove(os.path.join(cwd,f))
+            shutil.move(os.path.join(master,f), cwd)
+            l.log(f"\tMoving {f}")
+        except Exception: continue
+    except Exception: continue
+
+# move src folder
+source = os.path.join(cwd, f"YLCB-2-{branch}\\src\\")
+dest1 = os.path.join(cwd, "src\\")
+files = os.listdir(source)
+
+l.log(f"Moving {source} to {cwd}...")
+for f in files:
+    try:
+        shutil.move(os.path.join(source,f), dest1)
+        l.log(f"\tMoving {f}")
+    except shutil.Error as e:
+        try:
+            os.remove(os.path.join(dest1,f))
+            shutil.move(os.path.join(source,f), dest1)
+            l.log(f"\tMoving {f}")
+        except Exception: continue
+    except Exception: continue
+
+shutil.rmtree(source)
+shutil.rmtree(master)
