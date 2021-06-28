@@ -1,2 +1,2 @@
-python src/updater.py master
-move src/_updater.py src/updater.py
+python updater.py master
+move _updater.py updater.py

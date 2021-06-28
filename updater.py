@@ -67,6 +67,10 @@ for f in files:
     if f in ["config.json", "secrets.json", master.split('\\')[-1]]:
         os.remove(os.path.join(master,f))
         continue
+    if f == "updater.py":
+        shutil.move(os.path.join(master,f), dest1+"_"+f)
+        l.log(f"\tMoving {f}")
+        continue
     try:
         shutil.move(os.path.join(master,f), cwd)
         l.log(f"\tMoving {f}")
@@ -85,10 +89,6 @@ files = os.listdir(source)
 
 l.log(f"Moving {source} to {dest1}...")
 for f in files:
-    if f == "updater.py":
-        shutil.move(os.path.join(source,f), dest1+"_"+f)
-        l.log(f"\tMoving {f}")
-        continue
     try:
         shutil.move(os.path.join(source,f), dest1)
         l.log(f"\tMoving {f}")
