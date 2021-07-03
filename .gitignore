@@ -1,3 +1,5 @@
 *.zip
 _updater.py
 test/
+config.json
+*.pyc
